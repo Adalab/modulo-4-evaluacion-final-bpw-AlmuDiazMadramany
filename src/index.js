@@ -254,7 +254,6 @@ server.post('/login', async (req, res) => {
   }
 });
 
-// Usuario registrado: { "email": "almu@prueba.com", "nombre": "almu", "password": "prueba123"}
 
 // Middleware
 function auth(req, res, next) {
@@ -294,9 +293,13 @@ server.get('/userslist', auth, async (req, res) => {
   }
 });
 
-// Token postman: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsbXVAcHJ1ZWJhLmNvbSIsImlhdCI6MTc0MDU2NjA3MCwiZXhwIjoxNzQwNTY5NjcwfQ.3Jp1Qn7xb6aiAFBEw8XYib11NhU3u9XJuRLdox0m8AY
+
 
 const PORT = 5005;
 server.listen(PORT, () => {
   console.log(`Server is running http://localhost:${PORT}`);
 });
+
+
+// Usuario registrado: { "email": "almu@prueba.com", "nombre": "almu", "password": "prueba123"}
+// Token postman: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsbXVAcHJ1ZWJhLmNvbSIsImlhdCI6MTc0MDU2NjA3MCwiZXhwIjoxNzQwNTY5NjcwfQ.3Jp1Qn7xb6aiAFBEw8XYib11NhU3u9XJuRLdox0m8AY

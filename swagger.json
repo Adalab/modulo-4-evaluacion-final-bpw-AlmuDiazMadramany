@@ -1,0 +1,117 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Esquiar API",
+      "version": "1.0.0",
+      "description": "API para la gestión de pistas en diferentes estaciones de esquí y relacionada con usuarios"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:5005",
+        "description": "Servidor de desarrollo"
+      }
+    ],
+    "paths": {
+      "/pistas": {
+        "get": {
+          "summary": "Lista de todas las pistas",
+          "responses": {
+            "200": {
+              "description": "Operación exitosa",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "info": {
+                        "type": "object",
+                        "properties":{"count"},
+                      },
+                      "results": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/Pista"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/nuevapista": {
+        "post": {
+          "summary": "Crea una nueva pista",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NuevaPista"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Proyecto creado exitosamente"
+            }
+          }
+        }
+      },
+
+
+
+      
+      "/project/{idproject}": {
+        "get": {
+          "summary": "Obtiene detalles de un proyecto específico",
+          "parameters": [
+            {
+              "name": "idproject",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Operación exitosa"
+            },
+            "404": {
+              "description": "Proyecto no encontrado"
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "Project": {
+          "type": "object",
+          "properties": {
+            "idProject": {
+              "type": "integer"
+            }
+            // Otras propiedades del proyecto
+          }
+        },
+        "NewProject": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "slogan": {
+              "type": "string"
+            }
+            // Otras propiedades necesarias para crear un proyecto
+          }
+        }
+      }
+    }
+  }
