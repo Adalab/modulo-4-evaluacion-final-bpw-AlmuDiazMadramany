@@ -191,7 +191,6 @@ server.delete('/pistas/:id', async (req, res)=>{
 
 // --> REGISTRO USUARIO
 // URL POSTMAN: http://localhost:5005/register
-
 server.post('/register', async (req, res) => {
   try {
     const conn = await dbConnection();
@@ -219,16 +218,9 @@ server.post('/register', async (req, res) => {
   }
 });
 
-// Usuario registrado: 
-// {
-//   "email": "almu@prueba.com",
-//   "nombre": "almu",
-//   "password": "prueba123" 
-// }
 
 // --> LOGIN USUARIO
 // URL POSTMAN: http://localhost:5005/login
-
 server.post('/login', async (req, res) => {
 
   try {
@@ -262,7 +254,47 @@ server.post('/login', async (req, res) => {
   }
 });
 
+// Usuario registrado: { "email": "almu@prueba.com", "nombre": "almu", "password": "prueba123"}
 
+// Middleware
+function auth(req, res, next) {
+  const tokenString = req.headers.authorization;
+  if (!tokenString) {
+    res.status(401).json({ success: false, message: 'No esta autorizado' });
+  } else {
+    try {
+      const token = tokenString.split(' ')[1];
+      const verifyToken = jwt.verify(token, 'usuarioesquiar');
+      req.data = verifyToken;
+      next();
+    } catch (error) {
+      res.status(403).json({ success: false, message: "El token no es correcto" });
+    }
+    
+  }
+};
+
+//lista de usuarios con autorización
+// URL: http://localhost:5005/userslist
+server.get('/userslist', auth, async (req, res) => {
+  try {
+    const conn = await dbConnection();
+    const sqlUser = 'SELECT id_usuarios_db, email, nombre FROM esquiar.usuarios_db';
+    const [results] = await conn.query(sqlUser);
+    conn.end()
+    res.status(200).json({
+      success: true, 
+      data: results
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error al obtener los usuarios"
+    })
+  }
+});
+
+// Token postman: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFsbXVAcHJ1ZWJhLmNvbSIsImlhdCI6MTc0MDU2NjA3MCwiZXhwIjoxNzQwNTY5NjcwfQ.3Jp1Qn7xb6aiAFBEw8XYib11NhU3u9XJuRLdox0m8AY
 
 const PORT = 5005;
 server.listen(PORT, () => {
