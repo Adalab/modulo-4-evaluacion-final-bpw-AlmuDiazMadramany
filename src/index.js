@@ -1,7 +1,9 @@
 //imports
 const express = require('express');
 const cors = require('cors');
-const mysql = require ('mysql2/promise')
+const mysql = require ('mysql2/promise');
+const bcrypt = require('bcrypt');
+const jwt = require("jsonwebtoken");
 
 //crear el servidor
 const server = express();
@@ -23,7 +25,7 @@ async function dbConnection (){
   return connection;
 }
   
-// --> CRUD <--
+// --> CRUD 
 
 // ENDPOINT PARA LISTAR TODAS LAS ENTRADAS EXISTENTES
 // URL: http://localhost:5005/pistas
@@ -149,7 +151,7 @@ server.put('/pistas/:id', async (req, res)=>{
 
 
 // ENDOPOINT PARA ELIMINAR UNA ENTRADA EXISTENTE 
-// URL: http://localhost:5005/pistas/15 (La laguna repetida)
+// URL POSTMAN: http://localhost:5005/pistas/15 (La laguna repetida)
 server.delete('/pistas/:id', async (req, res)=>{
   try {
     const {id} = req.params;
@@ -185,6 +187,81 @@ server.delete('/pistas/:id', async (req, res)=>{
     message: "Error al eliminar la pista"
   });}
 })
+
+
+// --> REGISTRO USUARIO
+// URL POSTMAN: http://localhost:5005/register
+
+server.post('/register', async (req, res) => {
+  try {
+    const conn = await dbConnection();
+    const { email, nombre, password } = req.body;
+
+    const selectEmail = 'SELECT email FROM esquiar.usuarios_db WHERE email = ?';
+    const [emailResult] = await conn.query(selectEmail, [email]);
+
+    if (emailResult.length === 0) {
+
+      const passwordHashed = await bcrypt.hash(password, 10);
+      const insertUser = 'INSERT INTO esquiar.usuarios_db (email, nombre, password) values (?, ?, ?)';
+      const [result] = await conn.query(insertUser, [email, nombre, passwordHashed]);
+      conn.end();
+      res.status(201).json({ success: true, id: result.insertId });
+
+    } else {
+      res.status(200).json({ success: false, message: 'El usuario ya existe'});
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error al registrar al usuario"
+    });
+  }
+});
+
+// Usuario registrado: 
+// {
+//   "email": "almu@prueba.com",
+//   "nombre": "almu",
+//   "password": "prueba123" 
+// }
+
+// --> LOGIN USUARIO
+// URL POSTMAN: http://localhost:5005/login
+
+server.post('/login', async (req, res) => {
+
+  try {
+    const conn = await dbConnection();
+    const { email, password } = req.body;
+
+  const selectEmail = 'SELECT * FROM esquiar.usuarios_db WHERE email = ?';
+  const [emailResult] = await conn.query(selectEmail, [email]);
+
+
+  if (emailResult.length !== 0) {
+    const passwordDB = emailResult[0].password;
+    const isSamePassword = await bcrypt.compare(password, passwordDB);
+
+    if (isSamePassword) {
+      const infoToken = { email: emailResult[0].email, id: emailResult[0].id };
+      const token = jwt.sign(infoToken, 'usuarioesquiar', { expiresIn: '1h' });
+      res.status(200).json({ success: true, token: token });
+    } else {
+      res
+        .status(200).json({ success: false, message: 'contraseña incorrecta' });
+    }
+  } else {
+    res.status(200).json({ success: false, message: 'email incorrecto'});
+  }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error en el login"
+    });
+  }
+});
+
 
 
 const PORT = 5005;
